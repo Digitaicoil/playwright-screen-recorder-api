@@ -1,39 +1,39 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { chromium } = require('playwright');
+const { recordScreen } = require('./recording');
 const fs = require('fs');
+
+if (!fs.existsSync('videos')) {
+  fs.mkdirSync('videos');
+}
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-app.post('/record', async (req, res) => {
-  const { url, actions = [], duration = 10 } = req.body;
-
-  const browser = await chromium.launch({
-    headless: false,
-  });
-
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await page.goto(url);
-
-  for (const action of actions) {
-    if (action.type === 'scroll') {
-      await page.mouse.wheel(0, action.amount || 500);
-    } else if (action.type === 'wait') {
-      await page.waitForTimeout(action.delay || 1000);
-    }
-  }
-
-  await page.waitForTimeout(duration * 1000);
-  await page.screenshot({ path: 'screenshot.png' });
-
-  await browser.close();
-  res.json({ status: 'done', screenshot: 'saved' });
+app.get('/', (req, res) => {
+  res.send('🎥 Screen Recorder API is running!');
 });
 
-app.listen(3000, () => {
-  console.log('Recorder API running on port 3000');
+app.post('/record', async (req, res) => {
+  const { url, actions, duration } = req.body;
+
+  if (!url) {
+    return res.status(400).json({ error: 'URL is required' });
+  }
+
+  try {
+    const buffer = await recordScreen({ url, actions, duration });
+    res.set('Content-Type', 'video/webm');
+    res.send(buffer);
+  } catch (e) {
+    console.error('Recording error:', e);
+    res.status(500).json({ error: 'Failed to record screen' });
+  }
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Recorder API running on http://0.0.0.0:${port}`);
 });
