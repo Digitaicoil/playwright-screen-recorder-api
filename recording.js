@@ -10,7 +10,7 @@ async function performActionsAndRecord(url, actions, duration = 15) {
 
   if (!fs.existsSync('videos')) fs.mkdirSync('videos');
 
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const page = await context.newPage();
 
