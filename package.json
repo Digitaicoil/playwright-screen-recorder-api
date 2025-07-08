@@ -1,15 +1,14 @@
 {
-  "name": "playwright-screen-recorder-api",
+  "name": "playwright-screen-recorder",
   "version": "1.0.0",
-  "description": "API that records browser interactions using Playwright and FFmpeg",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "postinstall": "npx playwright install --with-deps"
+    "start": "node index.js"
   },
   "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "playwright": "^1.43.1",
-    "uuid": "^9.0.0"
+    "playwright": "^1.44.1"
   }
 }
