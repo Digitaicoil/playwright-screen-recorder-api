@@ -1,17 +1,19 @@
-FROM mcr.microsoft.com/playwright:focal
+FROM mcr.microsoft.com/playwright:v1.44.1-jammy
 
-# Install xvfb + ffmpeg
-RUN apt-get update && apt-get install -y xvfb ffmpeg
+# התקנות נוספות ל־ffmpeg (אם תשתמש בו)
+RUN apt-get update && \
+    apt-get install -y ffmpeg
 
+# העתק את כל הקבצים
 WORKDIR /app
-
 COPY . .
 
+# התקנת חבילות
 RUN npm install
 
-ENV DISPLAY=:99
+# הגדרת הפורט
+ENV PORT=3000
 EXPOSE 3000
 
-# Wrap xvfb-run in bash to prevent startup crash
-CMD ["bash", "-c", "echo 🚀 Starting container && xvfb-run --server-args='-screen 0 1280x720x24' node index.js || echo ❌ App crashed"]
-
+# הרצת השרת עם xvfb
+CMD ["xvfb-run", "--auto-servernum", "--server-args=-screen 0 1280x720x24", "node", "index.js"]
