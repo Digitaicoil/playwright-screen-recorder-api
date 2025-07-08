@@ -1,6 +1,8 @@
 const express = require('express');
 const { performActionsAndRecord } = require('./recording');
 const app = express();
+
+// ✅ This uses the Railway-assigned port
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
