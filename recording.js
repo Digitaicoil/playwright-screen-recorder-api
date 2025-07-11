@@ -11,10 +11,11 @@ async function recordScreen({ url, actions = [], duration = 10000 }) {
   });
 
   const page = await context.newPage();
+  page.setDefaultTimeout(60000); // Increase default timeout to 60 seconds
 
   try {
     console.log(`Navigating to ${url}...`);
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.goto(url, { waitUntil: 'networkidle' });
 
     for (const action of actions || []) {
       console.log(`Performing action: ${action.type || action.action}`);
@@ -26,14 +27,21 @@ async function recordScreen({ url, actions = [], duration = 10000 }) {
           await page.waitForTimeout(action.delay || 1000);
           break;
         case 'click':
-          if (action.selector) await page.click(action.selector);
+          if (action.selector) {
+            await page.waitForSelector(action.selector, { state: 'visible' });
+            await page.click(action.selector);
+          }
           break;
         case 'type':
         case 'fill':
-          if (action.selector && action.value) await page.fill(action.selector, action.value);
+          if (action.selector && action.value) {
+            await page.waitForSelector(action.selector, { state: 'visible' });
+            await page.fill(action.selector, action.value);
+          }
           break;
         case 'screenshot':
           if (action.selector) {
+            await page.waitForSelector(action.selector, { state: 'visible' });
             await page.locator(action.selector).screenshot({ path: `videos/screenshot-${Date.now()}.png` });
           } else {
             await page.screenshot({ path: `videos/screenshot-${Date.now()}.png` });
