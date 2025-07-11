@@ -3,6 +3,9 @@ services:
   recorder:
     build: .
     container_name: playwright-recorder
+    dns:
+      - "8.8.8.8"
+      - "1.1.1.1"
     ports:
       - "3001:3000"
     restart: unless-stopped 

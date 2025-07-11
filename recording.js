@@ -17,13 +17,34 @@ async function recordScreen({ url, actions = [], duration = 10000 }) {
   const page = await context.newPage();
   await page.goto(url);
 
-  for (const action of actions) {
-    if (action.type === 'scroll') {
-      await page.mouse.wheel(0, action.amount || 500);
-    } else if (action.type === 'wait') {
-      await page.waitForTimeout(action.delay || 1000);
+  for (const action of actions || []) {
+    switch (action.type || action.action) {
+      case 'scroll':
+        await page.mouse.wheel(0, action.amount || 500);
+        break;
+      case 'wait':
+        await page.waitForTimeout(action.delay || 1000);
+        break;
+      case 'click':
+        if (action.selector) {
+          await page.click(action.selector);
+        }
+        break;
+      case 'type':
+      case 'fill':
+        if (action.selector && action.value) {
+          await page.fill(action.selector, action.value);
+        }
+        break;
+      case 'screenshot':
+        if (action.selector) {
+          await page.locator(action.selector).screenshot({ path: `videos/screenshot-${Date.now()}.png` });
+        } else {
+          await page.screenshot({ path: `videos/screenshot-${Date.now()}.png` });
+        }
+        break;
+      // Ignoring 'upload' for now as it requires file handling
     }
-    // ניתן להוסיף עוד סוגי פעולות כאן
   }
 
   await page.waitForTimeout(duration);
