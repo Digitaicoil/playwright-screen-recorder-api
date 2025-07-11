@@ -16,11 +16,29 @@ async function recordScreen({ url, actions = [], duration = 10000 }) {
     console.log(`Navigating to ${url}...`);
     await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
 
-    for (const action of actions) {
-      if (action.type === 'scroll') {
-        await page.mouse.wheel(0, action.amount || 500);
-      } else if (action.type === 'wait') {
-        await page.waitForTimeout(action.delay || 1000);
+    for (const action of actions || []) {
+      console.log(`Performing action: ${action.type || action.action}`);
+      switch (action.type || action.action) {
+        case 'scroll':
+          await page.mouse.wheel(0, action.amount || 500);
+          break;
+        case 'wait':
+          await page.waitForTimeout(action.delay || 1000);
+          break;
+        case 'click':
+          if (action.selector) await page.click(action.selector);
+          break;
+        case 'type':
+        case 'fill':
+          if (action.selector && action.value) await page.fill(action.selector, action.value);
+          break;
+        case 'screenshot':
+          if (action.selector) {
+            await page.locator(action.selector).screenshot({ path: `videos/screenshot-${Date.now()}.png` });
+          } else {
+            await page.screenshot({ path: `videos/screenshot-${Date.now()}.png` });
+          }
+          break;
       }
     }
 
@@ -42,4 +60,4 @@ async function recordScreen({ url, actions = [], duration = 10000 }) {
   }
 }
 
-module.exports = recordScreen;
+module.exports = { recordScreen };
